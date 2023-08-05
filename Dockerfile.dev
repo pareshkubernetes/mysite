@@ -1,0 +1,22 @@
+FROM node:18.16.0-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json .
+
+RUN npm install  && deluser --remove-home node \
+  && addgroup -S node -g 1000 \
+  && adduser -S -G node -u 1000 node && chown -R node:node /app/node_modules 
+
+COPY . .
+
+FROM node:alpine
+
+WORKDIR /app
+
+COPY --from=builder /app /app
+
+USER node
+EXPOSE 3000
+
+CMD ["npm", "start"]
